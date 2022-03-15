@@ -4,28 +4,21 @@
 #include "Weapon/STUBaseWeapon.h"
 #include "Components/SkeletalMeshComponent.h"
 
-ASTUBaseWeapon::ASTUBaseWeapon()
-{
+ASTUBaseWeapon::ASTUBaseWeapon() {
 
-	PrimaryActorTick.bCanEverTick = 0;
-	WeaponMesh=CreateDefaultSubobject<USkeletalMeshComponent>("WeaponMesh");
-	SetRootComponent(WeaponMesh);
-	
-}
-
-// Called when the game starts or when spawned
-void ASTUBaseWeapon::BeginPlay()
-{
-	Super::BeginPlay();
-	
+    PrimaryActorTick.bCanEverTick = 0;
+    WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>("WeaponMesh");
+    SetRootComponent(WeaponMesh);
 }
 
 
+void ASTUBaseWeapon::BeginPlay() {
+    Super::BeginPlay();
+}
 
-
-
-
-
+void ASTUBaseWeapon::Fire() {
+    UE_LOG(LogTemp, Warning, TEXT("FIre!!"));
+}
 
 //
 

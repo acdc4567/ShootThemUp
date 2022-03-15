@@ -10,6 +10,7 @@ class UCameraComponent;
 class USpringArmComponent;
 class USTUHealthComponent;
 class UTextRenderComponent;
+class USTUWeaponComponent;
 
 
 UCLASS()
@@ -38,6 +39,9 @@ protected:
 	UPROPERTY(VisibleAnywhere,BlueprintReadWrite,Category="Components")
 	UTextRenderComponent* HealthTextComponent;
 
+	UPROPERTY(VisibleAnywhere,BlueprintReadWrite,Category="Components")
+	USTUWeaponComponent* WeaponComponent;
+
 	UPROPERTY(EditDefaultsOnly,Category="Components")
 	UAnimMontage* DeathAnimMontage;
 
@@ -46,6 +50,8 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly,Category="Movement")
 	FVector2D LandedDamage=FVector2D(10.f,100.f);
+
+	
 
 	
 
@@ -64,6 +70,9 @@ private:
 	void OnHealthChanged(float Health);
 	UFUNCTION()
 	void OnGroundLanded(const FHitResult& Hit );
+
+
+
 
 
 

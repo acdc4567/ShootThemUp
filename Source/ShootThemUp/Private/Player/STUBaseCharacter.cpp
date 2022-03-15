@@ -8,7 +8,10 @@
 #include "Components/STUCharacterMovementComponent.h"
 #include "Components/STUHealthComponent.h"
 #include "Components/TextRenderComponent.h"
+#include "Components/STUWeaponComponent.h"
 #include "GameFramework/Controller.h"
+
+
 
 DEFINE_LOG_CATEGORY_STATIC(BaseCharacterLog,All,All);
 
@@ -23,6 +26,8 @@ Super(ObjInit.SetDefaultSubobjectClass<USTUCharacterMovementComponent>(ACharacte
 	SpringArmComponent=CreateDefaultSubobject<USpringArmComponent>("SpringArmComponent");
 	SpringArmComponent->SetupAttachment(GetRootComponent());
 	SpringArmComponent->bUsePawnControlRotation=1;
+	SpringArmComponent->SocketOffset=FVector(0.f,100.f,80.f);
+
 
 	CameraComponent=CreateDefaultSubobject<UCameraComponent>("CameraComponent");
 	CameraComponent->SetupAttachment(SpringArmComponent);
@@ -32,6 +37,9 @@ Super(ObjInit.SetDefaultSubobjectClass<USTUCharacterMovementComponent>(ACharacte
 
 	HealthTextComponent=CreateDefaultSubobject<UTextRenderComponent>("HealthTextComponent");
 	HealthTextComponent->SetupAttachment(GetRootComponent());
+	HealthTextComponent->SetOwnerNoSee(1);
+
+	WeaponComponent=CreateDefaultSubobject<USTUWeaponComponent>("WeaponComponent");
 
 }
 
@@ -47,6 +55,7 @@ void ASTUBaseCharacter::BeginPlay()
 	HealthComponent->OnDeath.AddUObject(this,&ASTUBaseCharacter::OnDeath);
 	HealthComponent->OnHealthChanged.AddUObject(this,&ASTUBaseCharacter::OnHealthChanged);
 	LandedDelegate.AddDynamic(this,&ASTUBaseCharacter::OnGroundLanded);
+
 
 }
 
@@ -66,6 +75,8 @@ void ASTUBaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	check(PlayerInputComponent);
+	check(WeaponComponent);
+	
 	PlayerInputComponent->BindAxis("MoveForward",this,&ASTUBaseCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight",this,&ASTUBaseCharacter::MoveRight);
 	PlayerInputComponent->BindAxis("Turn",this,&ASTUBaseCharacter::AddControllerYawInput);
@@ -74,7 +85,8 @@ void ASTUBaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAction("Jump",IE_Pressed,this,&ASTUBaseCharacter::Jump);
 	PlayerInputComponent->BindAction("Run",IE_Pressed,this,&ASTUBaseCharacter::StartRunning);
 	PlayerInputComponent->BindAction("Run",IE_Released,this,&ASTUBaseCharacter::StopRunning);
-
+	PlayerInputComponent->BindAction("Fire",IE_Pressed,WeaponComponent,&USTUWeaponComponent::Fire);
+	
 
 }
 
@@ -145,8 +157,9 @@ float ASTUBaseCharacter::GetMovementDirection() const{
 
 
 
-//
 
+
+//
 
 
 
