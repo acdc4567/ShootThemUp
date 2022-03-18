@@ -6,31 +6,28 @@
 #include "Engine/World.h"
 #include "TimerManager.h"
 
+USTUHealthComponent::USTUHealthComponent() {
 
-
-USTUHealthComponent::USTUHealthComponent()
-{
-	
-	PrimaryComponentTick.bCanEverTick = 0;
-
-	
+    PrimaryComponentTick.bCanEverTick = 0;
 }
 
+float USTUHealthComponent::GetHealthPercent() const {
 
+    return Health / MaxHealth;
+}
 
 void USTUHealthComponent::BeginPlay()
 {
-	Super::BeginPlay();
+    Super::BeginPlay();
 
-	SetHealth(MaxHealth);
+    check(MaxHealth > 0);
 
-	
+    SetHealth(MaxHealth);
 
-	AActor* ComponentOwner=GetOwner();
-	if(ComponentOwner){
-		ComponentOwner->OnTakeAnyDamage.AddDynamic(this,&USTUHealthComponent::OnTakeAnyDamage);
-	}
-	
+    AActor *ComponentOwner = GetOwner();
+    if (ComponentOwner) {
+        ComponentOwner->OnTakeAnyDamage.AddDynamic(this, &USTUHealthComponent::OnTakeAnyDamage);
+    }
 }
 
 

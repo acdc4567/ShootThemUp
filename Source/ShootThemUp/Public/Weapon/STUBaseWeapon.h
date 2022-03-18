@@ -6,7 +6,28 @@
 #include "GameFramework/Actor.h"
 #include "STUBaseWeapon.generated.h"
 
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnClipEmptySignature,ASTUBaseWeapon*);
+
+
 class USkeletalMeshComponent;
+
+
+USTRUCT(BlueprintType)
+struct FWeaponUIData
+{
+	GENERATED_USTRUCT_BODY()
+
+	
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite,Category="Weapon")
+	UTexture2D* MainIcon;
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite,Category="Weapon")
+	UTexture2D* CrossHairIcon;
+
+	
+};
+
 
 USTRUCT(BlueprintType)
 struct FAmmoData
@@ -37,6 +58,17 @@ public:
 	virtual void StartFire();
 	virtual void StopFire();
 
+	FOnClipEmptySignature OnClipEmpty;
+
+	void ChangeClip();
+	bool CanReload() const;
+
+	FWeaponUIData GetUIData() const {return UIData;}
+	FAmmoData GetAmmoData() const {return CurrentAmmo;}
+
+	bool TryToAddAmmo(int ClipsAmount);
+
+
 protected:
 	
 	virtual void BeginPlay() override;
@@ -55,6 +87,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite,Category="Weapon")
 	FAmmoData DefaultAmmo{15,10,0};
 
+	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite,Category="UI")
+	FWeaponUIData UIData;
+
 	virtual void MakeShot();
 
 	APlayerController* GetPlayerController() const;
@@ -66,7 +101,9 @@ protected:
 	void DecreaseAmmo();
 	bool IsAmmoEmpty() const;
 	bool IsClipEmpty() const;
-	void ChangeClip();
+	bool IsAmmoFull() const;
+	
+	
 	void LogAmmo();
 
 private:	

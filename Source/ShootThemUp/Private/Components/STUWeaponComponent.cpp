@@ -2,12 +2,12 @@
 
 
 #include "Components/STUWeaponComponent.h"
-#include "Weapon/STUBaseWeapon.h"
+
 #include "GameFramework/Character.h"
 #include "Animations/STUEquipFinishedAnimNotify.h"
 #include "Animations/STUReloadFinishedAnimNotify.h"
 
-
+constexpr static int WeaponNum=2;
 
 USTUWeaponComponent::USTUWeaponComponent()
 {
@@ -22,6 +22,10 @@ USTUWeaponComponent::USTUWeaponComponent()
 void USTUWeaponComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+	checkf(WeaponData.Num()==WeaponNum,TEXT("2WeaponsOnly"));
+
+
 	CurrentWeaponIndex=0;
 	InitAnimations();
 	SpawnWeapons();
@@ -38,6 +42,8 @@ void USTUWeaponComponent::SpawnWeapons(){
 	for(auto OneWeaponData:WeaponData){
 		auto Weapon=GetWorld()->SpawnActor<ASTUBaseWeapon>(OneWeaponData.WeaponClass);
 		if(!Weapon) continue;
+
+		Weapon->OnClipEmpty.AddUObject(this,&USTUWeaponComponent::OnEmptyClip);
 		Weapon->SetOwner(Character);
 		Weapons.Add(Weapon);
 		AttachWeaponToSocket(Weapon,Character->GetMesh(),WeaponArmorySocketName);
@@ -104,6 +110,25 @@ void USTUWeaponComponent::NextWeapon() {
 
 }
 
+bool USTUWeaponComponent::GetWeaponUIData(FWeaponUIData& UIData) const{
+	if(CurrentWeapon){
+		UIData=CurrentWeapon->GetUIData();
+		return 1;
+	}
+	else return 0;
+}
+
+
+bool USTUWeaponComponent::GetWeaponAmmoData(FAmmoData& AmmoData) const{
+	if(CurrentWeapon){
+		AmmoData=CurrentWeapon->GetAmmoData();
+		return 1;
+	}
+	else return 0;
+}
+
+
+
 void USTUWeaponComponent::EndPlay(const EEndPlayReason::Type EndPlayReason){
 	CurrentWeapon=nullptr;
 	for(auto Weapon:Weapons){
@@ -136,9 +161,12 @@ void USTUWeaponComponent::InitAnimations(){
 		EquipFinishedNotify->OnNotified.AddUObject(this,&USTUWeaponComponent::OnEquipFinished);
 		
 	}
+	else{
+		checkNoEntry();
+	}
 	for(auto OneWeaponData:WeaponData){
         auto ReloadFinishedNotify = FindNotifyByClass<USTUReloadFinishedAnimNotify>(OneWeaponData.ReloadAnimMontage);
-        if (!ReloadFinishedNotify) continue;
+        if (!ReloadFinishedNotify) checkNoEntry();
 		ReloadFinishedNotify->OnNotified.AddUObject(this, &USTUWeaponComponent::OnReloadFinished);
         
     }
@@ -172,17 +200,51 @@ bool USTUWeaponComponent::CanEquip() const {
 }
 bool USTUWeaponComponent::CanReload() const {
 
-    return CurrentWeapon && !bEquipAnimInProgress && !bReloadAnimInProgress;
+    return CurrentWeapon && !bEquipAnimInProgress && !bReloadAnimInProgress&&CurrentWeapon->CanReload();
 }
 
-void USTUWeaponComponent::Reload(){
-	if(!CanReload()) return;
-	bReloadAnimInProgress=1;
-	PlayAnimMontage(CurrentReloadAnimMontage)	;
-
-
-
+void USTUWeaponComponent::Reload() {
+    ChangeClip();
 }
+
+void USTUWeaponComponent::OnEmptyClip(ASTUBaseWeapon* AmmoEmptyWeapon) {
+	if(!AmmoEmptyWeapon) return;
+	if(CurrentWeapon==AmmoEmptyWeapon){
+		ChangeClip();
+	}
+	else{
+		for(const auto Weapon:Weapons){
+			if(Weapon==AmmoEmptyWeapon){
+				Weapon->ChangeClip();
+				
+			}
+		}
+	}
+    
+}
+void USTUWeaponComponent::ChangeClip() {
+
+    if (!CanReload())
+        return;
+    CurrentWeapon->StopFire();
+    CurrentWeapon->ChangeClip();
+    bReloadAnimInProgress = 1;
+    PlayAnimMontage(CurrentReloadAnimMontage);
+}
+
+
+bool USTUWeaponComponent::TryToAddAmmo(TSubclassOf<ASTUBaseWeapon> WeaponType,int ClipsAmount){
+
+	for(const auto Weapon:Weapons){
+		if(Weapon&&Weapon->IsA(WeaponType)){
+			return Weapon->TryToAddAmmo(ClipsAmount );
+
+		}
+	}
+	return 0;
+}
+
+
 
 
 
@@ -193,6 +255,9 @@ void USTUWeaponComponent::Reload(){
 
 
 //
+
+
+
 
 
 

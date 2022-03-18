@@ -4,10 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Weapon/STUBaseWeapon.h"
 #include "STUWeaponComponent.generated.h"
 
 
-class ASTUBaseWeapon;
+
+
+
 USTRUCT(BlueprintType)
 struct FWeaponData
 {
@@ -22,6 +25,8 @@ struct FWeaponData
 	UAnimMontage* ReloadAnimMontage;
 };
 
+
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class SHOOTTHEMUP_API USTUWeaponComponent : public UActorComponent
 {
@@ -34,6 +39,12 @@ public:
 	void StopFire();
 	void NextWeapon();
 	void Reload();
+	bool GetWeaponUIData(FWeaponUIData& UIData) const;
+	bool GetWeaponAmmoData(FAmmoData& AmmoData) const;
+
+	bool TryToAddAmmo(TSubclassOf<ASTUBaseWeapon> WeaponType,int ClipsAmount);
+
+
 protected:
 	
 	virtual void BeginPlay() override;
@@ -82,6 +93,9 @@ private:
 	bool CanFire() const;
 	bool CanEquip() const;
 	bool CanReload() const;
+
+	void OnEmptyClip(ASTUBaseWeapon* AmmoEmptyWeapon);
+	void ChangeClip();
 
 	template<typename T>
 	T* FindNotifyByClass(UAnimSequenceBase* Animation){

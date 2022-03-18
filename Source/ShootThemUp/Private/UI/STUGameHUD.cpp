@@ -3,14 +3,25 @@
 
 #include "UI/STUGameHUD.h"
 #include "Engine/Canvas.h"
-
+#include "Blueprint/UserWidget.h"
 
 
 void ASTUGameHUD::DrawHUD(){
     Super::DrawHUD();
-    DrawCrosshair();
+    //DrawCrosshair();
 }
 
+void ASTUGameHUD::BeginPlay(){
+    Super::BeginPlay();
+    auto PlayerHUDWidget = CreateWidget<UUserWidget>(GetWorld(), PlayerHUDWidgetClass);
+    if (PlayerHUDWidget) {
+        PlayerHUDWidget->AddToViewport();
+    }
+}
+
+
+
+/*
 void ASTUGameHUD::DrawCrosshair(){
    
 
@@ -23,3 +34,4 @@ void ASTUGameHUD::DrawCrosshair(){
     DrawLine(Center.Min,Center.Max-HalfLineSize,Center.Min,Center.Max+HalfLineSize,LineColor,LineThickness);
 
 }
+*/
